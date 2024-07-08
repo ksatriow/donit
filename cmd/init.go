@@ -3,11 +3,19 @@ package cmd
 import (
 	"fmt"
 	"os"
-
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+    err := godotenv.Load()
+    if err != nil {
+        fmt.Println("Error loading .env file")
+        return
+    }
+
+    version = os.Getenv("VERSION")
+	
 	rootCmd.AddCommand(goCmd)
 	rootCmd.AddCommand(rustCmd)
 	rootCmd.AddCommand(nodeCmd)
