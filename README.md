@@ -21,7 +21,7 @@ Donit is a command-line interface (CLI) tool for initializing Docker and Docker 
 1. Clone the repository:
 
     ```sh
-    git clone https://github.com/yourusername/donit.git
+    git clone https://github.com/ksatriow/donit
     cd donit
     ```
 
@@ -161,7 +161,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-If you have any questions or suggestions, feel free to reach out at [your-email@example.com](mailto:your-email@example.com).
+If you have any questions or suggestions, feel free to reach out at [kukuhsatriowibowo@gmail.com](mailto:kukuhsatriowibowo@gmail.com).
 
 
 
