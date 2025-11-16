@@ -1,0 +1,47 @@
+# Build stage
+FROM eclipse-temurin:{{.Version}}-jdk-alpine AS builder
+
+WORKDIR /app
+
+# Copy Maven/Gradle files
+COPY pom.xml ./
+# Or for Gradle: COPY build.gradle settings.gradle ./
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+# For Maven:
+RUN ./mvnw clean package -DskipTests
+# For Gradle:
+# RUN ./gradlew build -x test
+
+# Runtime stage
+FROM eclipse-temurin:{{.Version}}-jre-alpine
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata
+
+# Create non-root user
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser
+
+# Copy JAR from builder
+COPY --from=builder /app/target/*.jar app.jar
+# Or for Gradle: COPY --from=builder /app/build/libs/*.jar app.jar
+
+# Change ownership
+RUN chown appuser:appuser app.jar
+
+USER appuser
+
+EXPOSE {{.Port}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:{{.Port}}/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+

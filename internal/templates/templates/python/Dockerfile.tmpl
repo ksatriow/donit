@@ -1,0 +1,45 @@
+# Build stage
+FROM python:{{.Version}}-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache gcc musl-dev libffi-dev
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Runtime stage
+FROM python:{{.Version}}-alpine
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata
+
+# Create non-root user
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser
+
+# Copy Python dependencies from builder
+COPY --from=builder /root/.local /home/appuser/.local
+
+# Copy application code
+COPY --chown=appuser:appuser . .
+
+# Set PATH to include user local bin
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+USER appuser
+
+EXPOSE {{.Port}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:{{.Port}}/health')" || exit 1
+
+CMD ["python", "app.py"]
+

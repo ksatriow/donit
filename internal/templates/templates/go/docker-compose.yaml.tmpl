@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: {{.ProjectName}}
+    ports:
+      - "{{.Port}}:{{.Port}}"
+    environment:
+      - PORT={{.Port}}
+    volumes:
+      - .:/app
+      - go-mod-cache:/go/pkg/mod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:{{.Port}}/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - app-network
+
+volumes:
+  go-mod-cache:
+
+networks:
+  app-network:
+    driver: bridge
+
